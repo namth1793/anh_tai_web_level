@@ -71,7 +71,7 @@ export default function MissionDetail() {
         </div>
       </div>
 
-      <div className="px-5 -mt-8">
+      <div className="px-5 -mt-8 pb-24">
         <motion.div initial={{ y:20, opacity:0 }} animate={{ y:0, opacity:1 }}
           className="q-card mb-4 flex gap-6 justify-center">
           <div className="text-center">

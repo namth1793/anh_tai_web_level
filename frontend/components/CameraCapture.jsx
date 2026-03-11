@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { Camera, Upload, RotateCcw, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -10,14 +10,16 @@ export default function CameraCapture({ onCapture }) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const fileRef = useRef(null);
+  const streamRef = useRef(null);
 
-  // Set srcObject whenever stream changes and video element is mounted
-  useEffect(() => {
-    if (stream && videoRef.current) {
-      videoRef.current.srcObject = stream;
-      videoRef.current.play().catch(() => {});
+  // Callback ref: sets srcObject the moment the video element mounts in the DOM
+  const videoCallbackRef = (el) => {
+    videoRef.current = el;
+    if (el && streamRef.current) {
+      el.srcObject = streamRef.current;
+      el.play().catch(() => {});
     }
-  }, [stream, mode]);
+  };
 
   const startCamera = async () => {
     setError('');
@@ -25,8 +27,9 @@ export default function CameraCapture({ onCapture }) {
       const ms = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
       });
-      setMode('camera');
+      streamRef.current = ms;
       setStream(ms);
+      setMode('camera');
     } catch (err) {
       const msg = err.name === 'NotAllowedError'
         ? 'Bạn chưa cho phép truy cập camera. Hãy thử tải ảnh lên.'
@@ -36,7 +39,8 @@ export default function CameraCapture({ onCapture }) {
   };
 
   const stopCamera = () => {
-    if (stream) stream.getTracks().forEach(t => t.stop());
+    if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop());
+    streamRef.current = null;
     setStream(null);
   };
 
@@ -89,7 +93,7 @@ export default function CameraCapture({ onCapture }) {
         {mode === 'camera' && (
           <motion.div key="camera" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="relative rounded-2xl overflow-hidden bg-black">
-            <video ref={videoRef} autoPlay playsInline muted className="w-full max-h-80 object-cover" />
+            <video ref={videoCallbackRef} autoPlay playsInline muted className="w-full max-h-80 object-cover" />
             <div className="absolute bottom-4 inset-x-0 flex justify-center gap-4">
               <button onClick={retake} className="bg-white/20 backdrop-blur text-white px-4 py-2 rounded-full text-sm flex items-center gap-1">
                 <RotateCcw size={14} /> Hủy
