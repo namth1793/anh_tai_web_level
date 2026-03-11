@@ -1,13 +1,13 @@
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
-import Layout from '../../components/Layout';
-import CameraCapture from '../../components/CameraCapture';
-import { isLoggedIn } from '../../lib/auth';
-import api from '../../lib/api';
-import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { ArrowLeft, CheckCircle, Clock, XCircle, Zap } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
+import CameraCapture from '../../components/CameraCapture';
+import Layout from '../../components/Layout';
+import api from '../../lib/api';
+import { isLoggedIn } from '../../lib/auth';
 
 const BRANCH_CONFIG = {
   academic:{ icon:'📚', label:'Học Thuật', bg:'bg-blue-50' },
@@ -57,7 +57,7 @@ export default function MissionDetail() {
 
   return (
     <Layout title={mission.title}>
-      <div className="relative px-5 pt-5 pb-16"
+      <div className="px-5 pt-5 pb-16"
         style={{ background:'linear-gradient(135deg,#FF7A00,#FFA94D)' }}>
         <Link href="/missions" className="flex items-center gap-1 text-white/80 text-sm mb-4">
           <ArrowLeft size={18}/> Quay lại
