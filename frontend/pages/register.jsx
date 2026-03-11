@@ -3,12 +3,11 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
-import { User, Mail, Lock, Hash, BookOpen, ArrowLeft } from 'lucide-react';
+import { User, Mail, Lock, Hash, ArrowLeft } from 'lucide-react';
 import api from '../lib/api';
 import { setAuth } from '../lib/auth';
 import Head from 'next/head';
 
-const MAJORS = ['Software Engineering','Business Administration','Marketing','Logistics','Graphic Design','Artificial Intelligence'];
 
 function RegisterForm({ fields, form, setForm, loading, handleSubmit }) {
   return (
@@ -20,13 +19,6 @@ function RegisterForm({ fields, form, setForm, loading, handleSubmit }) {
             value={form[f.key]} onChange={e => setForm({...form,[f.key]:e.target.value})} required={f.required}/>
         </div>
       ))}
-      <div className="relative">
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-orange-primary"><BookOpen size={18}/></div>
-        <select className="q-input pl-11 appearance-none" value={form.major} onChange={e => setForm({...form,major:e.target.value})}>
-          <option value="">Chọn ngành học</option>
-          {MAJORS.map(m => <option key={m} value={m}>{m}</option>)}
-        </select>
-      </div>
       <motion.button type="submit" disabled={loading} whileTap={{ scale:0.97 }}
         className="btn-orange w-full py-4 text-base mt-2">
         {loading ? 'Đang tạo tài khoản...' : '⚔️ Bắt đầu hành trình!'}
@@ -41,7 +33,7 @@ function RegisterForm({ fields, form, setForm, loading, handleSubmit }) {
 
 export default function Register() {
   const router = useRouter();
-  const [form, setForm] = useState({ name:'', email:'', password:'', student_id:'', major:'' });
+  const [form, setForm] = useState({ name:'', email:'', password:'', student_id:'' });
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {

@@ -61,7 +61,7 @@ export default function DesktopNav() {
             <div className="flex-1 min-w-0">
               <p className="font-bold text-gray-800 text-sm truncate">{user.name}</p>
               <p className="text-xs font-medium" style={{ color: '#FF7A00' }}>
-                🪙 {user.total_coins} · Lv.{user.level}
+                🪙 {user.total_coins} · Lv.{li ? li.level : getLevelInfo(user.xp || 0).level}
               </p>
             </div>
           </div>

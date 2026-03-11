@@ -24,12 +24,16 @@ const upload = multer({
 });
 
 function getLevelFromXP(xp) {
-  if (xp < 100) return 1;
-  if (xp < 250) return 2;
-  if (xp < 500) return 3;
+  if (xp < 200)  return 1;
+  if (xp < 450)  return 2;
+  if (xp < 700)  return 3;
   if (xp < 1000) return 4;
-  if (xp < 2000) return 5;
-  return Math.floor(xp / 500) + 1;
+  if (xp < 1300) return 5;
+  if (xp < 1600) return 6;
+  if (xp < 1900) return 7;
+  if (xp < 2200) return 8;
+  if (xp < 2500) return 9;
+  return 10;
 }
 
 // POST /api/submissions - submit mission proof
@@ -43,15 +47,21 @@ router.post('/', auth, upload.single('proof'), (req, res) => {
   if (!mission) return res.status(404).json({ error: 'Mission not found' });
 
   const existing = db.prepare('SELECT * FROM submissions WHERE user_id = ? AND mission_id = ?').get(req.user.id, mission_id);
-  if (existing) return res.status(409).json({ error: 'Already submitted this mission' });
+  if (existing && existing.status !== 'rejected') return res.status(409).json({ error: 'Already submitted this mission' });
 
   try {
-    const result = db.prepare(`
-      INSERT INTO submissions (user_id, mission_id, proof_image, note)
-      VALUES (?, ?, ?, ?)
-    `).run(req.user.id, mission_id, req.file.filename, note || '');
-
-    const submission = db.prepare('SELECT * FROM submissions WHERE id = ?').get(result.lastInsertRowid);
+    let submission;
+    if (existing && existing.status === 'rejected') {
+      db.prepare(`UPDATE submissions SET proof_image=?, note=?, status='pending', admin_note='', reviewed_by=NULL, reviewed_at=NULL, created_at=CURRENT_TIMESTAMP WHERE id=?`)
+        .run(req.file.filename, note || '', existing.id);
+      submission = db.prepare('SELECT * FROM submissions WHERE id = ?').get(existing.id);
+    } else {
+      const result = db.prepare(`
+        INSERT INTO submissions (user_id, mission_id, proof_image, note)
+        VALUES (?, ?, ?, ?)
+      `).run(req.user.id, mission_id, req.file.filename, note || '');
+      submission = db.prepare('SELECT * FROM submissions WHERE id = ?').get(result.lastInsertRowid);
+    }
     res.status(201).json(submission);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -67,10 +77,10 @@ router.post('/base64', auth, (req, res) => {
   if (!mission) return res.status(404).json({ error: 'Mission not found' });
 
   const existing = db.prepare('SELECT * FROM submissions WHERE user_id = ? AND mission_id = ?').get(req.user.id, mission_id);
-  if (existing) return res.status(409).json({ error: 'Already submitted this mission' });
+  if (existing && existing.status !== 'rejected') return res.status(409).json({ error: 'Already submitted this mission' });
 
   try {
-    const fs = require('fs');
+    const fsModule = require('fs');
     const matches = image_data.match(/^data:image\/(\w+);base64,(.+)$/);
     if (!matches) return res.status(400).json({ error: 'Invalid image data' });
 
@@ -78,14 +88,20 @@ router.post('/base64', auth, (req, res) => {
     const base64Data = matches[2];
     const filename = `${uuidv4()}.${ext}`;
     const filepath = path.join(__dirname, '../uploads', filename);
-    fs.writeFileSync(filepath, Buffer.from(base64Data, 'base64'));
+    fsModule.writeFileSync(filepath, Buffer.from(base64Data, 'base64'));
 
-    const result = db.prepare(`
-      INSERT INTO submissions (user_id, mission_id, proof_image, note)
-      VALUES (?, ?, ?, ?)
-    `).run(req.user.id, mission_id, filename, note || '');
-
-    const submission = db.prepare('SELECT * FROM submissions WHERE id = ?').get(result.lastInsertRowid);
+    let submission;
+    if (existing && existing.status === 'rejected') {
+      db.prepare(`UPDATE submissions SET proof_image=?, note=?, status='pending', admin_note='', reviewed_by=NULL, reviewed_at=NULL, created_at=CURRENT_TIMESTAMP WHERE id=?`)
+        .run(filename, note || '', existing.id);
+      submission = db.prepare('SELECT * FROM submissions WHERE id = ?').get(existing.id);
+    } else {
+      const result = db.prepare(`
+        INSERT INTO submissions (user_id, mission_id, proof_image, note)
+        VALUES (?, ?, ?, ?)
+      `).run(req.user.id, mission_id, filename, note || '');
+      submission = db.prepare('SELECT * FROM submissions WHERE id = ?').get(result.lastInsertRowid);
+    }
     res.status(201).json(submission);
   } catch (err) {
     res.status(500).json({ error: err.message });

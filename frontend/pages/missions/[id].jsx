@@ -140,8 +140,8 @@ export default function MissionDetail() {
         {!isApproved && !isPending && (
           <motion.div initial={{ y:20, opacity:0 }} animate={{ y:0, opacity:1 }} transition={{ delay:0.3 }}
             className="q-card mb-4">
-            <h2 className="font-bold text-gray-800 mb-1">📸 Nộp Bằng Chứng</h2>
-            <p className="text-gray-400 text-xs mb-4">Chụp hoặc tải lên ảnh làm bằng chứng. Admin sẽ duyệt và trao thưởng.</p>
+            <h2 className="font-bold text-gray-800 mb-1">{isRejected ? '🔄 Nộp Lại Bằng Chứng' : '📸 Nộp Bằng Chứng'}</h2>
+            <p className="text-gray-400 text-xs mb-4">{isRejected ? 'Bạn có thể nộp lại ảnh mới sau khi bị từ chối.' : 'Chụp hoặc tải lên ảnh làm bằng chứng. Admin sẽ duyệt và trao thưởng.'}</p>
             <CameraCapture onCapture={setCapturedImage}/>
             <textarea className="q-input mt-4 resize-none text-sm" rows={3}
               placeholder="Ghi chú thêm... (tùy chọn)"

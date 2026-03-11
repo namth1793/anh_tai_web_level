@@ -71,33 +71,55 @@ export default function Login() {
         );
 
         const HeroPanel = () => (
-          <div className="relative flex-shrink-0 overflow-hidden flex flex-col items-center justify-center"
-            style={{ background: 'linear-gradient(160deg, #FF7A00 0%, #FFA94D 60%, #FFD4A8 100%)' }}>
-            <div className="absolute bottom-0 inset-x-0">
-              <svg viewBox="0 0 420 120" className="w-full" fill="white" fillOpacity="0.15">
-                <rect x="10" y="40" width="60" height="80" rx="4"/><rect x="20" y="20" width="40" height="20" rx="2"/>
-                <rect x="100" y="55" width="80" height="65" rx="4"/><rect x="120" y="30" width="40" height="25" rx="2"/>
-                <rect x="210" y="35" width="70" height="85" rx="4"/><rect x="225" y="15" width="40" height="20" rx="2"/>
-                <rect x="310" y="50" width="90" height="70" rx="4"/><rect x="330" y="28" width="50" height="22" rx="2"/>
-              </svg>
-            </div>
-            {['10%','30%','60%','80%','90%'].map((left, i) => (
-              <motion.div key={i} className="absolute text-white/40 text-xl"
-                style={{ left, top: `${15 + i * 10}%` }}
-                animate={{ opacity:[0.3,1,0.3], scale:[0.8,1.2,0.8] }}
-                transition={{ duration: 2 + i*0.5, repeat: Infinity }}>✦</motion.div>
+          <div className="relative flex-shrink-0 overflow-hidden flex flex-col items-center justify-center h-full"
+            style={{ background: 'linear-gradient(160deg, #FF6B00 0%, #FF8C00 40%, #FFA94D 100%)' }}>
+            {/* Decorative circles */}
+            <div className="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-white/5"/>
+            <div className="absolute -bottom-16 -right-16 w-60 h-60 rounded-full bg-white/5"/>
+            <div className="absolute top-1/4 -right-8 w-40 h-40 rounded-full bg-white/5"/>
+            {/* Floating stars */}
+            {[{left:'8%',top:'12%'},{left:'85%',top:'18%'},{left:'15%',top:'72%'},{left:'78%',top:'65%'},{left:'50%',top:'8%'}].map((pos, i) => (
+              <motion.div key={i} className="absolute text-white/30 text-lg"
+                style={pos}
+                animate={{ opacity:[0.2,0.8,0.2], y:[0,-8,0] }}
+                transition={{ duration: 2.5 + i*0.4, repeat: Infinity, delay: i*0.3 }}>✦</motion.div>
             ))}
-            <motion.div initial={{ scale:0 }} animate={{ scale:1 }} transition={{ type:'spring', delay:0.2 }}
-              className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center shadow-lg mb-3 relative z-10">
-              <span className="text-4xl">⚔️</span>
-            </motion.div>
-            <motion.h1 initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.4 }}
-              className="text-white text-3xl font-black tracking-wide relative z-10">F-QUEST</motion.h1>
-            <motion.p initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.6 }}
-              className="text-white/80 text-sm font-medium relative z-10">THE FIRST YEAR SURVIVOR</motion.p>
-            <p className="text-white/60 text-xs mt-4 px-8 text-center relative z-10 hidden md:block">
-              Chinh phục campus qua những nhiệm vụ thực tế.<br/>Kiếm F-Coins, lên level và trở thành huyền thoại!
-            </p>
+            {/* Content */}
+            <div className="relative z-10 flex flex-col items-center px-10 text-center">
+              <motion.div initial={{ scale:0, rotate:-20 }} animate={{ scale:1, rotate:0 }}
+                transition={{ type:'spring', delay:0.1, stiffness:200 }}
+                className="w-16 h-16 md:w-24 md:h-24 bg-white rounded-3xl flex items-center justify-center shadow-2xl mb-3 md:mb-5">
+                <span className="text-3xl md:text-5xl">⚔️</span>
+              </motion.div>
+              <motion.h1 initial={{ opacity:0, y:15 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.3 }}
+                className="text-white text-3xl md:text-4xl font-black tracking-widest mb-1">F-QUEST</motion.h1>
+              <motion.p initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.45 }}
+                className="text-white/70 text-xs font-semibold tracking-[0.2em] uppercase">The First Year Survivor</motion.p>
+              {/* Feature cards — desktop only */}
+              <motion.div initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.6 }}
+                className="hidden md:flex flex-col gap-3 w-full mt-8">
+                {[
+                  { icon:'📚', text:'Nhiệm vụ học thuật thực tế' },
+                  { icon:'🎭', text:'Khám phá văn hóa FPT campus' },
+                  { icon:'🤝', text:'Kết nối cộng đồng & kiếm F-Coins' },
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center gap-3 bg-white/15 backdrop-blur rounded-2xl px-4 py-2.5 text-left">
+                    <span className="text-xl">{item.icon}</span>
+                    <span className="text-white/90 text-sm font-medium">{item.text}</span>
+                  </div>
+                ))}
+              </motion.div>
+              {/* Stats row — desktop only */}
+              <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.9 }}
+                className="hidden md:flex mt-8 gap-6">
+                {[['🏆','Leaderboard'],['🪙','F-Coins'],['⚡','XP & Level']].map(([icon,label]) => (
+                  <div key={label} className="text-center">
+                    <div className="text-2xl mb-1">{icon}</div>
+                    <div className="text-white/60 text-xs">{label}</div>
+                  </div>
+                ))}
+              </motion.div>
+            </div>
           </div>
         );
 
@@ -115,15 +137,23 @@ export default function Login() {
 
             {/* ── DESKTOP ── */}
             <div className="hidden md:flex min-h-screen"
-              style={{ background:'linear-gradient(160deg,#FFF5EB 0%,#FFE8CC 60%,#FFF0E0 100%)' }}>
-              {/* Left hero panel */}
-              <div className="w-2/5 min-h-screen"><HeroPanel /></div>
-              {/* Right form panel */}
-              <div className="flex-1 flex items-center justify-center p-12">
-                <motion.div initial={{ opacity:0, x:40 }} animate={{ opacity:1, x:0 }}
-                  transition={{ delay:0.2 }}
-                  className="bg-white rounded-3xl shadow-2xl p-10 w-full max-w-md">
-                  <FormContent />
+              style={{ background:'linear-gradient(135deg,#FFF3E6 0%,#FFE0B2 100%)' }}>
+              {/* Left hero panel — fixed width */}
+              <div className="w-[480px] min-h-screen flex-shrink-0"><HeroPanel /></div>
+              {/* Right form area */}
+              <div className="flex-1 flex items-center justify-center px-16 py-12">
+                <motion.div initial={{ opacity:0, y:30 }} animate={{ opacity:1, y:0 }}
+                  transition={{ delay:0.25, type:'spring', damping:22 }}
+                  className="w-full max-w-lg">
+                  {/* Header above card */}
+                  <div className="mb-8">
+                    <h1 className="text-3xl font-black text-gray-800 mb-1">Chào mừng trở lại! 👋</h1>
+                    <p className="text-gray-500">Đăng nhập để tiếp tục hành trình của bạn</p>
+                  </div>
+                  <div className="bg-white rounded-3xl shadow-xl p-10 border border-orange-100">
+                    <FormContent />
+                  </div>
+                  <p className="text-center text-gray-400 text-xs mt-6">F-QUEST © FPT University Da Nang 2024</p>
                 </motion.div>
               </div>
             </div>

@@ -1,9 +1,10 @@
 /**
  * ChibiWalker — Dashboard scene.
- * The chibi walks left ↔ right, stops to jump & show a speech bubble, then repeats.
+ * Chibi walks left ↔ right, jumps & shows a speech bubble, then repeats.
+ * Uses the PNG image loaded via Phaser preload.
  */
 import { useEffect, useRef } from 'react';
-import { makeChibi, showBubble } from '../lib/chibiDraw';
+import { showBubble } from '../lib/chibiDraw';
 
 const MESSAGES = [
   'Chào bạn! 👋',
@@ -38,6 +39,9 @@ export default function ChibiWalker() {
         banner: false,
         audio: { noAudio: true },
         scene: {
+          preload() {
+            this.load.image('chibi', '/chibi.png');
+          },
           create() { walkerScene(this, W); },
         },
       });
@@ -61,29 +65,26 @@ export default function ChibiWalker() {
 
 /* ─── Phaser scene ─── */
 function walkerScene(scene, W) {
-  const GY = 70; // ground y (container placed here, feet touch GY+17)
+  const GY = 74; // ground y — chibi feet rest here
 
   // Subtle ground line
   const gfx = scene.add.graphics();
   gfx.lineStyle(1.5, 0xFFD4A8, 0.4);
-  gfx.lineBetween(10, GY + 17, W - 10, GY + 17);
+  gfx.lineBetween(10, GY, W - 10, GY);
 
-  const chibi = makeChibi(scene, 55, GY);
-  let frame = 0;
-  let walking = true;
+  // Chibi image — origin at bottom-center (feet anchor)
+  const chibi = scene.add.image(55, GY, 'chibi');
+  chibi.setOrigin(0.5, 1);
+  // Scale so chibi is 68px tall
+  const baseScale = 68 / chibi.height;
+  chibi.setScale(baseScale);
+
   let msgIdx = 0;
 
-  // Walk leg flicker
-  scene.time.addEvent({
-    delay: 230,
-    loop: true,
-    callback() { if (walking) chibi.legs(frame ^= 1); },
-  });
-
-  // Continuous body bob
+  // Continuous idle bob
   scene.tweens.add({
-    targets: chibi.c,
-    y: GY - 2,
+    targets: chibi,
+    y: GY - 3,
     duration: 380,
     ease: 'Sine.easeInOut',
     yoyo: true,
@@ -91,35 +92,31 @@ function walkerScene(scene, W) {
   });
 
   function cycle() {
-    const goRight = chibi.c.x < W / 2;
+    const goRight = chibi.x < W / 2;
     const targetX = goRight ? W - 55 : 55;
-    walking = true;
-    chibi.c.scaleX = goRight ? 1 : -1;
+    // Face walk direction
+    chibi.scaleX = goRight ? baseScale : -baseScale;
 
     scene.tweens.add({
-      targets: chibi.c,
+      targets: chibi,
       x: targetX,
-      duration: Math.abs(targetX - chibi.c.x) * 9,
+      duration: Math.abs(targetX - chibi.x) * 9,
       ease: 'Linear',
       onComplete() {
-        walking = false;
-        chibi.legs(0);
+        // Flip to face the audience when talking
+        chibi.scaleX = goRight ? -baseScale : baseScale;
 
         // Celebrate jump
         scene.tweens.add({
-          targets: chibi.c,
-          y: GY - 16,
+          targets: chibi,
+          y: GY - 18,
           duration: 170,
           ease: 'Power2',
           yoyo: true,
           repeat: 2,
         });
 
-        // Flip so chibi "faces" the audience when talking
-        chibi.c.scaleX = goRight ? -1 : 1;
-
-        showBubble(scene, chibi.c, MESSAGES[msgIdx++ % MESSAGES.length], W);
-
+        showBubble(scene, chibi, MESSAGES[msgIdx++ % MESSAGES.length], W);
         scene.time.delayedCall(2600, cycle);
       },
     });

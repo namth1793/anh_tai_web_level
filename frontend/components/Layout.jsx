@@ -3,7 +3,7 @@ import BottomNav from './BottomNav';
 import DesktopNav from './DesktopNav';
 import { Toaster } from 'react-hot-toast';
 import { useEffect, useState } from 'react';
-import { getUser } from '../lib/auth';
+import { getUser, getLevelInfo } from '../lib/auth';
 
 export default function Layout({ children, title = 'F-QUEST', showNav = true }) {
   const [user, setUser] = useState(null);
@@ -35,7 +35,7 @@ export default function Layout({ children, title = 'F-QUEST', showNav = true }) 
                     <span>{user.total_coins || 0} F-Coins</span>
                   </div>
                   <div className="text-sm text-gray-400 font-medium">
-                    Lv.{user.level || 1}
+                    Lv.{getLevelInfo(user.xp || 0).level}
                   </div>
                 </div>
               )}

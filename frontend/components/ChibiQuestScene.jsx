@@ -1,14 +1,12 @@
 /**
  * ChibiQuestScene — Quest-tree scene.
- * Shows a vertical 5-level path. The chibi starts at Lv.1 then runs up to
- * the player's current level on mount. When the `level` prop increases,
- * the chibi runs up to the new level with a celebration.
+ * Shows a vertical 5-level path. The chibi runs up to the player's level.
+ * Uses the PNG image loaded via Phaser preload.
  */
 import { useEffect, useRef } from 'react';
-import { makeChibi, celebrate } from '../lib/chibiDraw';
+import { celebrate } from '../lib/chibiDraw';
 
-// Level y positions inside 320px canvas (level 1 at bottom → level 5 at top)
-const LEVEL_Y   = { 1: 280, 2: 220, 3: 160, 4: 100, 5: 48 };
+const LEVEL_Y    = { 1: 280, 2: 220, 3: 160, 4: 100, 5: 48 };
 const LEVEL_NAME = {
   1: 'Tân Binh',
   2: 'Chiến Binh',
@@ -16,16 +14,15 @@ const LEVEL_NAME = {
   4: 'Huyền Thoại',
   5: '⚔️ HERO',
 };
-const PATH_X  = 32; // x of the vertical dotted path
-const CHIBI_X = 75; // x of the character (right of the path)
+const PATH_X  = 32;
+const CHIBI_X = 78;
 
 export default function ChibiQuestScene({ level = 1 }) {
   const wrapRef    = useRef(null);
   const gameRef    = useRef(null);
-  const setLevelFn = useRef(null);   // callback exposed by the Phaser scene
-  const initLevel  = useRef(level);  // level at mount time
+  const setLevelFn = useRef(null);
+  const initLevel  = useRef(level);
 
-  /* ── Mount: create Phaser game ── */
   useEffect(() => {
     if (typeof window === 'undefined') return;
     let alive = true;
@@ -43,9 +40,14 @@ export default function ChibiQuestScene({ level = 1 }) {
         banner: false,
         audio: { noAudio: true },
         scene: {
+          preload() {
+            this.load.image('chibi', '/chibi.png');
+          },
           create() {
             const { setLevel } = buildScene(this, initLevel.current);
             setLevelFn.current = setLevel;
+            // If level prop updated while Phaser was loading, climb now
+            if (initLevel.current > 1) setLevel(initLevel.current);
           },
         },
       });
@@ -58,8 +60,9 @@ export default function ChibiQuestScene({ level = 1 }) {
     };
   }, []);
 
-  /* ── When level prop changes after mount ── */
   useEffect(() => {
+    // Keep initLevel in sync so Phaser uses the latest value even if game creates after level updates
+    initLevel.current = level;
     setLevelFn.current?.(level);
   }, [level]);
 
@@ -89,29 +92,29 @@ function buildScene(scene, initLv) {
     markerGfx[lv] = g;
     drawMarker(g, lv, y, false);
 
-    // Lv.N text
     scene.add.text(PATH_X + 14, y - 9, `Lv.${lv}`, {
       fontSize: '9px', color: '#FF7A00',
       fontFamily: '-apple-system, BlinkMacSystemFont, Arial',
       fontStyle: 'bold',
     });
-    // Name text
     scene.add.text(PATH_X + 14, y + 2, LEVEL_NAME[lv], {
       fontSize: '7.5px', color: '#AAAAAA',
       fontFamily: '-apple-system, BlinkMacSystemFont, Arial',
     });
   }
 
-  /* Highlight the starting level marker */
   drawMarker(markerGfx[initLv], initLv, LEVEL_Y[initLv], true);
 
-  /* Character — starts at level 1 */
-  const chibi = makeChibi(scene, CHIBI_X, LEVEL_Y[1]);
-  chibi.c.scaleX = -1; // face left (toward the path)
+  /* Chibi image — anchored at bottom-center, scaled to ~55px tall */
+  const chibi = scene.add.image(CHIBI_X, LEVEL_Y[1], 'chibi');
+  chibi.setOrigin(0.5, 1);
+  const baseScale = 55 / chibi.height;
+  chibi.setScale(baseScale);
+  chibi.scaleX = -baseScale; // face left toward the path
 
-  // Idle bob tween (replaced when climbing)
+  // Idle bob
   let bobTween = scene.tweens.add({
-    targets: chibi.c,
+    targets: chibi,
     y: LEVEL_Y[1] - 3,
     duration: 850,
     ease: 'Sine.easeInOut',
@@ -122,34 +125,21 @@ function buildScene(scene, initLv) {
   let currentLv = 1;
   let busy = false;
 
-  /* Animate chibi from currentLv up to targetLv */
   function climbTo(targetLv, onDone) {
     if (targetLv <= currentLv) { onDone?.(); return; }
-
-    // Walk up one level at a time for a stair-step effect
-    const nextLv = currentLv + 1;
-    const fromY  = LEVEL_Y[currentLv];
-    const toY    = LEVEL_Y[nextLv];
-
-    // Walking leg animation during climb
-    let frame = 0;
-    const legTimer = scene.time.addEvent({
-      delay: 180, loop: true,
-      callback() { chibi.legs(frame ^= 1); },
-    });
+    const nextLv  = currentLv + 1;
+    const fromY   = LEVEL_Y[currentLv];
+    const toY     = LEVEL_Y[nextLv];
 
     scene.tweens.add({
-      targets: chibi.c, y: toY,
+      targets: chibi,
+      y: toY,
       duration: Math.abs(toY - fromY) * 11,
       ease: 'Power1.easeOut',
       onComplete() {
-        legTimer.destroy();
-        chibi.legs(0);
         drawMarker(markerGfx[nextLv], nextLv, LEVEL_Y[nextLv], true);
         currentLv = nextLv;
-
         if (nextLv < targetLv) {
-          // Continue climbing
           scene.time.delayedCall(120, () => climbTo(targetLv, onDone));
         } else {
           onDone?.();
@@ -163,22 +153,18 @@ function buildScene(scene, initLv) {
     if (busy || newLv === currentLv) return;
     busy = true;
 
-    // Stop bob
     bobTween.stop();
-    scene.tweens.killTweensOf(chibi.c);
+    scene.tweens.killTweensOf(chibi);
 
-    // Dim old marker if going to a different level
     if (newLv !== currentLv) {
       drawMarker(markerGfx[currentLv], currentLv, LEVEL_Y[currentLv], false);
     }
 
     climbTo(newLv, () => {
-      // Celebrate at new level
-      celebrate(scene, CHIBI_X, LEVEL_Y[newLv] - 10);
+      celebrate(scene, CHIBI_X, LEVEL_Y[newLv] - 20);
 
-      // Resume idle bob at new position
       bobTween = scene.tweens.add({
-        targets: chibi.c,
+        targets: chibi,
         y: LEVEL_Y[newLv] - 3,
         duration: 850,
         ease: 'Sine.easeInOut',
@@ -190,7 +176,6 @@ function buildScene(scene, initLv) {
     });
   }
 
-  /* On mount: animate from level 1 up to initLv after a short delay */
   if (initLv > 1) {
     scene.time.delayedCall(600, () => setLevel(initLv));
   }
@@ -198,7 +183,6 @@ function buildScene(scene, initLv) {
   return { setLevel };
 }
 
-/* Draw / redraw a single level-marker circle */
 function drawMarker(g, lv, y, active) {
   g.clear();
   if (active) {
@@ -206,7 +190,6 @@ function drawMarker(g, lv, y, active) {
     g.fillCircle(PATH_X, y, 9);
     g.lineStyle(2.5, 0xFFFFFF, 0.85);
     g.strokeCircle(PATH_X, y, 9);
-    // Inner star dot
     g.fillStyle(0xFFFFFF, 0.9);
     g.fillCircle(PATH_X, y, 3);
   } else {

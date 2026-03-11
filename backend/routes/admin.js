@@ -61,11 +61,16 @@ router.put('/submissions/:id/approve', adminOnly, (req, res) => {
     // Update level
     const user = db.prepare('SELECT xp FROM users WHERE id = ?').get(submission.user_id);
     let level = 1;
-    if (user.xp >= 2000) level = Math.floor(user.xp / 500) + 1;
-    else if (user.xp >= 1000) level = 5;
-    else if (user.xp >= 500) level = 4;
-    else if (user.xp >= 250) level = 3;
-    else if (user.xp >= 100) level = 2;
+    const x = user.xp;
+    if (x >= 2500) level = 10;
+    else if (x >= 2200) level = 9;
+    else if (x >= 1900) level = 8;
+    else if (x >= 1600) level = 7;
+    else if (x >= 1300) level = 6;
+    else if (x >= 1000) level = 5;
+    else if (x >= 700)  level = 4;
+    else if (x >= 450)  level = 3;
+    else if (x >= 200)  level = 2;
     db.prepare('UPDATE users SET level = ? WHERE id = ?').run(level, submission.user_id);
   });
 

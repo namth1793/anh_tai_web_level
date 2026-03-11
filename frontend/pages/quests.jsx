@@ -44,7 +44,7 @@ export default function QuestTree() {
             <p className="text-xs text-gray-400 font-medium mb-1">Nhân vật của bạn</p>
             <p className="text-lg font-black text-gray-800">Level {userLevel}</p>
             <p className="text-sm text-orange-primary font-bold">
-              {{ 1:'Tân Binh', 2:'Chiến Binh', 3:'Dũng Sĩ', 4:'Huyền Thoại', 5:'⚔️ HERO' }[userLevel]}
+              {getLevelInfo(getUser()?.xp || 0).name}
             </p>
             <p className="text-xs text-gray-400 mt-2 leading-relaxed">
               Hoàn thành nhiệm vụ để leo lên cấp cao hơn!

@@ -24,7 +24,7 @@ export default function Profile() {
     Promise.all([api.get('/auth/me'), api.get('/submissions/my')])
       .then(([me, subs]) => {
         setUser(me.data);
-        setForm({ name: me.data.name, student_id: me.data.student_id || '', major: me.data.major || '' });
+        setForm({ name: me.data.name, student_id: me.data.student_id || '' });
         setSubmissions(subs.data);
       }).finally(() => setLoading(false));
   }, []);
@@ -106,12 +106,6 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* Major edit */}
-        {editing && (
-          <input className="bg-white/20 text-white placeholder-white/60 rounded-xl px-3 py-1.5 text-sm w-full border border-white/30 focus:outline-none mb-3"
-            placeholder="Ngành học" value={form.major}
-            onChange={e => setForm({ ...form, major: e.target.value })}/>
-        )}
 
         {/* Stats row */}
         <div className="flex gap-3">

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Camera, Upload, RotateCcw, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -11,17 +11,27 @@ export default function CameraCapture({ onCapture }) {
   const canvasRef = useRef(null);
   const fileRef = useRef(null);
 
+  // Set srcObject whenever stream changes and video element is mounted
+  useEffect(() => {
+    if (stream && videoRef.current) {
+      videoRef.current.srcObject = stream;
+      videoRef.current.play().catch(() => {});
+    }
+  }, [stream, mode]);
+
   const startCamera = async () => {
     setError('');
     try {
       const ms = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+        video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
       });
-      setStream(ms);
       setMode('camera');
-      setTimeout(() => { if (videoRef.current) videoRef.current.srcObject = ms; }, 100);
-    } catch {
-      setError('Không thể truy cập camera. Hãy thử tải ảnh lên.');
+      setStream(ms);
+    } catch (err) {
+      const msg = err.name === 'NotAllowedError'
+        ? 'Bạn chưa cho phép truy cập camera. Hãy thử tải ảnh lên.'
+        : 'Không thể truy cập camera. Hãy thử tải ảnh lên.';
+      setError(msg);
     }
   };
 
