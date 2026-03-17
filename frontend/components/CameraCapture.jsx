@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Camera, Upload, RotateCcw, Check } from 'lucide-react';
+import { Camera, RotateCcw, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function CameraCapture({ onCapture }) {
@@ -9,7 +9,6 @@ export default function CameraCapture({ onCapture }) {
   const [error, setError] = useState('');
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
-  const fileRef = useRef(null);
   const streamRef = useRef(null);
 
   // Callback ref: sets srcObject the moment the video element mounts in the DOM
@@ -32,8 +31,8 @@ export default function CameraCapture({ onCapture }) {
       setMode('camera');
     } catch (err) {
       const msg = err.name === 'NotAllowedError'
-        ? 'Bạn chưa cho phép truy cập camera. Hãy thử tải ảnh lên.'
-        : 'Không thể truy cập camera. Hãy thử tải ảnh lên.';
+        ? 'Bạn chưa cho phép truy cập camera. Vui lòng cấp quyền và thử lại.'
+        : 'Không thể truy cập camera. Vui lòng thử lại.';
       setError(msg);
     }
   };
@@ -58,14 +57,6 @@ export default function CameraCapture({ onCapture }) {
 
   const retake = () => { setCapturedImage(null); setMode('select'); };
 
-  const handleFile = (e) => {
-    const file = e.target.files[0];
-    if (!file || !file.type.startsWith('image/')) { setError('Chỉ chấp nhận file ảnh'); return; }
-    const reader = new FileReader();
-    reader.onload = (ev) => { setCapturedImage(ev.target.result); setMode('preview'); onCapture(ev.target.result); };
-    reader.readAsDataURL(file);
-  };
-
   return (
     <div className="w-full">
       <canvas ref={canvasRef} className="hidden" />
@@ -77,16 +68,9 @@ export default function CameraCapture({ onCapture }) {
             <div className="text-5xl mb-3">📸</div>
             <p className="text-gray-500 text-sm mb-4">Chụp ảnh bằng chứng hoàn thành nhiệm vụ</p>
             {error && <p className="text-red-500 text-xs mb-3">{error}</p>}
-            <div className="flex gap-3 justify-center">
-              <button onClick={startCamera} className="btn-orange flex items-center gap-2">
-                <Camera size={16} /> Camera
-              </button>
-              <button onClick={() => fileRef.current?.click()}
-                className="bg-white border-2 border-orange-200 text-orange-primary font-bold py-2 px-4 rounded-full flex items-center gap-2 text-sm">
-                <Upload size={16} /> Tải lên
-              </button>
-            </div>
-            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
+            <button onClick={startCamera} className="btn-orange flex items-center gap-2 mx-auto">
+              <Camera size={16} /> Mở Camera
+            </button>
           </motion.div>
         )}
 
