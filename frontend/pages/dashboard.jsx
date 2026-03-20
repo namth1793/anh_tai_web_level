@@ -3,9 +3,10 @@ import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
 import Layout from '../components/Layout';
 import TopBar from '../components/TopBar';
+import OnboardingModal from '../components/OnboardingModal';
 import { isLoggedIn, getLevelInfo } from '../lib/auth';
 import api from '../lib/api';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 
 const ChibiWalker = dynamic(() => import('../components/ChibiWalker'), { ssr: false });
@@ -17,6 +18,7 @@ export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [missions, setMissions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
     if (!isLoggedIn()) { router.push('/login'); return; }
@@ -25,9 +27,17 @@ export default function Dashboard() {
         setUser(me.data);
         localStorage.setItem('fquest_user', JSON.stringify(me.data));
         setMissions(ms.data.filter(m => !m.userStatus).slice(0, 3));
+        if (!localStorage.getItem('fquest_onboarded')) {
+          setShowOnboarding(true);
+        }
       }).catch(() => router.push('/login'))
       .finally(() => setLoading(false));
   }, []);
+
+  const handleCloseOnboarding = () => {
+    localStorage.setItem('fquest_onboarded', '1');
+    setShowOnboarding(false);
+  };
 
   if (loading || !user) return (
     <div className="mobile-container flex items-center justify-center min-h-screen">
@@ -159,6 +169,10 @@ export default function Dashboard() {
           ))}
         </div>
       </div>
+
+      <AnimatePresence>
+        {showOnboarding && <OnboardingModal onClose={handleCloseOnboarding} />}
+      </AnimatePresence>
     </Layout>
   );
 }
