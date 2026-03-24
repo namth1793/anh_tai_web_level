@@ -103,6 +103,76 @@ if (userCount === 0) {
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
     .run('Lê Hoàng Cường', 'cuong.lh@fquest.edu.vn', hashPw('student123'), 'MK180003', 'Marketing', 220, 500, 5);
 
+  // 50 sample students for leaderboard diversity
+  const insertStudent = db.prepare(`INSERT INTO users (name, email, password, student_id, major, total_coins, xp, level) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`);
+  const sampleStudents = [
+    // Top tier - Level 10 (2500+ XP)
+    ['Phạm Minh Khôi',      'khoi.pm@fquest.edu.vn',   'SE190010', 'Software Engineering',      380, 2600, 10],
+    ['Nguyễn Thị Lan Anh',  'lanh.nt@fquest.edu.vn',   'BA190011', 'Business Administration',   360, 2550, 10],
+    ['Trần Quốc Bảo',       'bao.tq@fquest.edu.vn',    'SE190012', 'Software Engineering',      340, 2510, 10],
+    // Level 9 (2200–2499 XP)
+    ['Lê Thị Thu Hà',       'ha.lt@fquest.edu.vn',     'MK190013', 'Marketing',                 310, 2450, 9],
+    ['Võ Thanh Tùng',       'tung.vt@fquest.edu.vn',   'GD190014', 'Graphic Design',            295, 2380, 9],
+    ['Đỗ Ngọc Huyền',       'huyen.dn@fquest.edu.vn',  'AI190015', 'Artificial Intelligence',   280, 2300, 9],
+    // Level 8 (1900–2199 XP)
+    ['Bùi Văn Đức',         'duc.bv@fquest.edu.vn',    'SE190016', 'Software Engineering',      260, 2180, 8],
+    ['Hoàng Thị Ngọc',      'ngoc.ht@fquest.edu.vn',   'BA190017', 'Business Administration',   245, 2100, 8],
+    ['Nguyễn Hoàng Long',   'long.nh@fquest.edu.vn',   'IB190018', 'International Business',    230, 2020, 8],
+    ['Trịnh Thị Phương',    'phuong.tt@fquest.edu.vn', 'MK190019', 'Marketing',                 215, 1960, 8],
+    // Level 7 (1600–1899 XP)
+    ['Lâm Thành Đạt',       'dat.lt@fquest.edu.vn',    'SE190020', 'Software Engineering',      200, 1850, 7],
+    ['Phùng Thị Minh',      'minh.pt@fquest.edu.vn',   'GD190021', 'Graphic Design',            188, 1780, 7],
+    ['Đặng Văn Hùng',       'hung.dv@fquest.edu.vn',   'BA190022', 'Business Administration',   175, 1710, 7],
+    ['Vũ Thị Thanh Thảo',   'thao.vt@fquest.edu.vn',   'AI190023', 'Artificial Intelligence',   162, 1650, 7],
+    // Level 6 (1300–1599 XP)
+    ['Cao Nguyên Phúc',     'phuc.cn@fquest.edu.vn',   'SE190024', 'Software Engineering',      150, 1580, 6],
+    ['Đinh Thị Quỳnh',      'quynh.dt@fquest.edu.vn',  'MK190025', 'Marketing',                 138, 1500, 6],
+    ['Lý Gia Huy',          'huy.lg@fquest.edu.vn',    'IB190026', 'International Business',    126, 1430, 6],
+    ['Ngô Thị Bảo Châu',    'chau.nt@fquest.edu.vn',   'BA190027', 'Business Administration',   114, 1380, 6],
+    ['Phan Văn Kiên',       'kien.pv@fquest.edu.vn',   'SE190028', 'Software Engineering',      102, 1320, 6],
+    // Level 5 (1000–1299 XP)
+    ['Trương Thị Hồng',     'hong.tt@fquest.edu.vn',   'GD190029', 'Graphic Design',             95, 1260, 5],
+    ['Lê Quang Minh',       'minh.lq@fquest.edu.vn',   'SE190030', 'Software Engineering',       88, 1190, 5],
+    ['Nguyễn Thúy Linh',    'linh.nt@fquest.edu.vn',   'BA190031', 'Business Administration',    80, 1130, 5],
+    ['Phạm Văn Tài',        'tai.pv@fquest.edu.vn',    'MK190032', 'Marketing',                  72, 1070, 5],
+    ['Hoàng Mạnh Cường',    'cuong.hm@fquest.edu.vn',  'AI190033', 'Artificial Intelligence',    65, 1010, 5],
+    // Level 4 (700–999 XP)
+    ['Vũ Ngọc Anh',         'anh.vn@fquest.edu.vn',    'IB190034', 'International Business',     58, 960,  4],
+    ['Bùi Thị Thu',         'thu.bt@fquest.edu.vn',    'SE190035', 'Software Engineering',        52, 900,  4],
+    ['Đoàn Văn Phát',       'phat.dv@fquest.edu.vn',   'GD190036', 'Graphic Design',              46, 840,  4],
+    ['Nguyễn Khánh Linh',   'linh.nk@fquest.edu.vn',   'BA190037', 'Business Administration',     40, 780,  4],
+    ['Trần Việt Dũng',      'dung.tv@fquest.edu.vn',   'MK190038', 'Marketing',                   34, 730,  4],
+    // Level 3 (400–699 XP)
+    ['Lê Thị Diễm',         'diem.lt@fquest.edu.vn',   'SE190039', 'Software Engineering',        30, 680,  3],
+    ['Võ Văn Khải',         'khai.vv@fquest.edu.vn',   'AI190040', 'Artificial Intelligence',     26, 620,  3],
+    ['Đỗ Thị Hà',           'ha.dt@fquest.edu.vn',     'BA190041', 'Business Administration',     22, 560,  3],
+    ['Hồ Trung Hiếu',       'hieu.ht@fquest.edu.vn',   'IB190042', 'International Business',      18, 500,  3],
+    ['Lưu Thị Thanh',       'thanh.lt@fquest.edu.vn',  'MK190043', 'Marketing',                   15, 450,  3],
+    ['Phạm Quốc Cường',     'cuong.pq@fquest.edu.vn',  'GD190044', 'Graphic Design',              12, 415,  3],
+    // Level 2 (200–399 XP)
+    ['Nguyễn Thị Xuân',     'xuan.nt@fquest.edu.vn',   'SE190045', 'Software Engineering',        10, 380,  2],
+    ['Trần Văn Hải',        'hai.tv@fquest.edu.vn',    'BA190046', 'Business Administration',      8, 330,  2],
+    ['Lê Hoàng Phúc',       'phuc.lh@fquest.edu.vn',   'MK190047', 'Marketing',                    6, 290,  2],
+    ['Đặng Thị Kim',        'kim.dt@fquest.edu.vn',    'AI190048', 'Artificial Intelligence',       5, 250,  2],
+    ['Bùi Quang Trung',     'trung.bq@fquest.edu.vn',  'IB190049', 'International Business',       4, 210,  2],
+    // Level 1 (0–199 XP) - newbies
+    ['Cao Thị Thùy',        'thuy.ct@fquest.edu.vn',   'SE200050', 'Software Engineering',          3, 180,  1],
+    ['Đinh Văn Nam',        'nam.dv@fquest.edu.vn',    'GD200051', 'Graphic Design',                2, 145,  1],
+    ['Nguyễn Thị Nhi',      'nhi.nt@fquest.edu.vn',   'BA200052', 'Business Administration',        2, 110,  1],
+    ['Phan Thế Anh',        'anh.pt@fquest.edu.vn',    'MK200053', 'Marketing',                     1,  80,  1],
+    ['Lý Thị Mai',          'mai.lt@fquest.edu.vn',    'SE200054', 'Software Engineering',           1,  60,  1],
+    ['Trương Văn Bình',     'binh.tv@fquest.edu.vn',   'AI200055', 'Artificial Intelligence',        1,  45,  1],
+    ['Vũ Thị Hoa',          'hoa.vt@fquest.edu.vn',    'IB200056', 'International Business',         0,  30,  1],
+    ['Đoàn Minh Tuấn',      'tuan.dm@fquest.edu.vn',   'BA200057', 'Business Administration',        0,  20,  1],
+    ['Hoàng Thị Yến',       'yen.ht@fquest.edu.vn',    'MK200058', 'Marketing',                      0,  10,  1],
+    ['Lê Văn Sơn',          'son.lv@fquest.edu.vn',    'GD200059', 'Graphic Design',                 0,   5,  1],
+  ];
+
+  const pw = hashPw('student123');
+  for (const [name, email, student_id, major, coins, xp, level] of sampleStudents) {
+    insertStudent.run(name, email, pw, student_id, major, coins, xp, level);
+  }
+
   // Missions
   const insertMission = db.prepare(`INSERT INTO missions (title, description, branch, difficulty, coins_reward, xp_reward, hint)
     VALUES (?, ?, ?, ?, ?, ?, ?)`);
