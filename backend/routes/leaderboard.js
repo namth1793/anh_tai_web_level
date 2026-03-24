@@ -14,8 +14,12 @@ router.get('/coins', auth, (req, res) => {
 
   const myRank = db.prepare(`
     SELECT COUNT(*) + 1 as rank FROM users
-    WHERE role = 'student' AND total_coins > (SELECT total_coins FROM users WHERE id = ?)
-  `).get(req.user.id);
+    WHERE role = 'student' AND (
+      total_coins > (SELECT total_coins FROM users WHERE id = ?)
+      OR (total_coins = (SELECT total_coins FROM users WHERE id = ?)
+          AND xp > (SELECT xp FROM users WHERE id = ?))
+    )
+  `).get(req.user.id, req.user.id, req.user.id);
 
   res.json({ top, myRank: myRank.rank });
 });
