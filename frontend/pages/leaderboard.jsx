@@ -24,13 +24,23 @@ export default function Leaderboard() {
   const [myRank, setMyRank] = useState(null);
   const [tab, setTab] = useState('coins');
   const [loading, setLoading] = useState(true);
-  const me = getUser();
+  const [me, setMe] = useState(getUser());
 
   useEffect(() => {
     if (!isLoggedIn()) { router.push('/login'); return; }
-    Promise.all([api.get('/leaderboard/coins'), api.get('/leaderboard/missions')])
-      .then(([c, m]) => { setCoinsBoard(c.data.top); setMyRank(c.data.myRank); setMissionsBoard(m.data.top); })
-      .finally(() => setLoading(false));
+    Promise.all([
+      api.get('/leaderboard/coins'),
+      api.get('/leaderboard/missions'),
+      api.get('/auth/me'),
+    ]).then(([c, m, meRes]) => {
+      setCoinsBoard(c.data.top);
+      setMyRank(c.data.myRank);
+      setMissionsBoard(m.data.top);
+      // sync fresh user data so name/coins are always up-to-date
+      const fresh = meRes.data;
+      setMe(fresh);
+      localStorage.setItem('fquest_user', JSON.stringify(fresh));
+    }).finally(() => setLoading(false));
   }, []);
 
   const MEDAL = ['🥇','🥈','🥉'];

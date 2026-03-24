@@ -9,7 +9,7 @@ router.get('/coins', auth, (req, res) => {
     SELECT id, name, student_id, major, avatar, total_coins, level, xp
     FROM users WHERE role = 'student'
     ORDER BY total_coins DESC, xp DESC
-    LIMIT 20
+    LIMIT 60
   `).all();
 
   const myRank = db.prepare(`
@@ -30,7 +30,7 @@ router.get('/missions', auth, (req, res) => {
     WHERE u.role = 'student'
     GROUP BY u.id
     ORDER BY completed_missions DESC, u.level DESC
-    LIMIT 20
+    LIMIT 60
   `).all();
 
   res.json({ top });

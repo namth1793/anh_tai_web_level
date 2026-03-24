@@ -38,9 +38,12 @@ export default function QuestTree() {
 
         {/* Chibi hero banner */}
         <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }}
-          className="q-card flex items-center gap-4 mb-5 overflow-hidden">
-          <ChibiQuestScene level={userLevel} />
-          <div className="flex-1 min-w-0">
+          className="q-card flex items-start gap-4 mb-5">
+          {/* Scrollable quest path */}
+          <div style={{ width:160, height:300, overflowY:'auto' }} className="flex-shrink-0 rounded-xl">
+            <ChibiQuestScene level={userLevel} />
+          </div>
+          <div className="flex-1 min-w-0 pt-2">
             <p className="text-xs text-gray-400 font-medium mb-1">Nhân vật của bạn</p>
             <p className="text-lg font-black text-gray-800">Level {userLevel}</p>
             <p className="text-sm text-orange-primary font-bold">
@@ -49,6 +52,18 @@ export default function QuestTree() {
             <p className="text-xs text-gray-400 mt-2 leading-relaxed">
               Hoàn thành nhiệm vụ để leo lên cấp cao hơn!
             </p>
+            <div className="mt-3 space-y-1">
+              {[...Array(10)].map((_,i) => {
+                const lv = i+1;
+                const names = ['Tân Binh','Thám Hiểm','Chiến Binh','Dũng Sĩ','Anh Hùng','Huyền Thoại','Chiến Thần','Thiên Long','Bất Bại','Bá Vương'];
+                return (
+                  <div key={lv} className={`flex items-center gap-1.5 text-xs ${lv<=userLevel?'text-orange-primary font-bold':'text-gray-300'}`}>
+                    <span>{lv<=userLevel?'🔥':'○'}</span>
+                    <span>Lv.{lv} {names[i]}</span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </motion.div>
 
